@@ -1,6 +1,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { Providers } from "@/lib/wagmi";
+import { FactoryConfigProvider } from "@/lib/factory-config";
 
 export const metadata: Metadata = {
   title: "Token Research Lab",
@@ -11,7 +12,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="de">
       <body>
-        <Providers>{children}</Providers>
+        <Providers>
+          <FactoryConfigProvider>{children}</FactoryConfigProvider>
+        </Providers>
       </body>
     </html>
   );

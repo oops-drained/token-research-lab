@@ -41,7 +41,29 @@ Die Adressen stehen danach in:
 - `deployments/11155111.json` (Sepolia)
 - `deployments/97.json` (BSC Testnet)
 
-Trage sie auch in `deployments/deployments.json` ein **oder** nutze nur Env-Vars (empfohlen für Dokploy).
+Trage die Adresse ein via **eine** dieser Methoden:
+
+| Methode | Wo | Rebuild nötig? |
+|---------|-----|----------------|
+| **Dokploy Runtime Env** | `FACTORY_SEPOLIA=0x...` | Nein — nur Container restart |
+| **Im Webpanel** | Factory-Adresse eintragen → Speichern | Nein |
+| **Build Arg** | `NEXT_PUBLIC_FACTORY_SEPOLIA=0x...` | Ja |
+
+### Schnell: Adresse im Webpanel eintragen
+
+1. Factory auf Sepolia deployen (siehe unten)
+2. Im Panel unter **„Factory-Adresse“** die `0x...` Adresse einfügen
+3. **Speichern** klicken — sofort nutzbar
+
+### Schnell: Dokploy Env (ohne Rebuild)
+
+In Dokploy → Environment → hinzufügen:
+
+```
+FACTORY_SEPOLIA=0xDeineFactoryAdresse
+```
+
+Container **neu starten** (nicht neu bauen).
 
 ## 3. Dokploy Deployment
 
@@ -53,22 +75,24 @@ Trage sie auch in `deployments/deployments.json` ein **oder** nutze nur Env-Vars
 4. **Dockerfile Path:** `Dockerfile`
 5. **Port:** `3000`
 
-**Build Arguments** (unter Environment / Build Args):
+**Build Arguments** (optional — alternativ Runtime Env nutzen):
 
 | Variable | Beispiel |
 |----------|----------|
 | `NEXT_PUBLIC_FACTORY_SEPOLIA` | `0xYourFactoryOnSepolia` |
 | `NEXT_PUBLIC_FACTORY_BSC_TESTNET` | `0xYourFactoryOnBscTestnet` |
 
-> `NEXT_PUBLIC_*` Variablen werden beim **Build** eingebettet. Nach Änderung musst du **neu deployen**.
-
-**Runtime Environment:**
+**Runtime Environment** (empfohlen — kein Rebuild bei Adress-Änderung):
 
 | Variable | Wert |
 |----------|------|
+| `FACTORY_SEPOLIA` | `0x...` (Sepolia TokenFactory) |
+| `FACTORY_BSC_TESTNET` | `0x...` (BSC Testnet TokenFactory) |
 | `NODE_ENV` | `production` |
 | `PORT` | `3000` |
 | `HOSTNAME` | `0.0.0.0` |
+
+> `FACTORY_*` Runtime-Variablen werden von `/api/config` geladen — **kein Rebuild** nötig.
 
 6. Domain zuweisen (z. B. `research.deine-domain.de`)
 7. Deploy starten

@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import { useAccount, useChainId, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
-import { parseUnits, decodeEventLog } from "viem";
+import { decodeEventLog } from "viem";
 import { TOKEN_FACTORY_ABI } from "@/lib/abis";
-import { getFactoryAddressWithOverride, setFactoryAddress, saveToken } from "@/lib/deployments";
+import { saveToken } from "@/lib/deployments";
+import { useFactoryConfig } from "@/lib/factory-config";
 import type { SupportedChainId } from "@/lib/chains";
-import { EXPLORER_URL } from "@/lib/chains";
+import { CHAIN_LABELS, EXPLORER_URL } from "@/lib/chains";
 
 const PRESETS = [
   { name: "Tether USD", symbol: "USDT", decimals: 6 },
@@ -20,31 +21,34 @@ interface Props {
 }
 
 export function CreateTokenPanel({ onCreated }: Props) {
-  const { isConnected, address } = useAccount();
+  const { isConnected } = useAccount();
   const chainId = useChainId() as SupportedChainId;
+  const { loaded, getFactory, saveOverride } = useFactoryConfig();
   const [name, setName] = useState("Tether USD");
   const [symbol, setSymbol] = useState("USDT");
   const [decimals, setDecimals] = useState(6);
   const [factoryOverride, setFactoryOverride] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  const factory = getFactoryAddressWithOverride(chainId);
+  const factory = getFactory(chainId);
 
   const { writeContract, data: txHash, isPending, error: writeError } = useWriteContract();
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash: txHash });
 
   const handleSaveFactory = () => {
-    if (factoryOverride) {
-      setFactoryAddress(chainId, factoryOverride);
-      setFactoryOverride("");
-      window.location.reload();
+    if (!factoryOverride.match(/^0x[a-fA-F0-9]{40}$/)) {
+      setError("Ungültige Adresse. Format: 0x + 40 Hex-Zeichen.");
+      return;
     }
+    saveOverride(chainId, factoryOverride);
+    setFactoryOverride("");
+    setError(null);
   };
 
   const handleCreate = () => {
     setError(null);
     if (!factory) {
-      setError("Keine Factory-Adresse für dieses Netzwerk. Bitte deployen und eintragen.");
+      setError("Keine Factory-Adresse für dieses Netzwerk.");
       return;
     }
     writeContract({
@@ -62,17 +66,33 @@ export function CreateTokenPanel({ onCreated }: Props) {
         Deployt einen neuen ERC-20 auf dem Testnet. Nur für Security-Research.
       </p>
 
-      {!factory && (
+      {loaded && !factory && (
         <div className="status err" style={{ marginBottom: "1rem" }}>
-          Factory nicht konfiguriert für Chain {chainId}. Deploye mit{" "}
-          <code>npm run deploy:sepolia</code> und trage die Adresse ein.
+          <strong>Factory nicht konfiguriert</strong> für {CHAIN_LABELS[chainId]}.
+          <br />
+          <br />
+          <strong>Option A — Im Browser (sofort):</strong> Factory-Adresse unten eintragen und
+          „Speichern“ klicken.
+          <br />
+          <br />
+          <strong>Option B — Dokploy:</strong> Env-Variable setzen und Container neu starten
+          (kein Rebuild nötig):
+          <br />
+          <code>FACTORY_SEPOLIA=0x...</code> für Sepolia
+          <br />
+          <code>FACTORY_BSC_TESTNET=0x...</code> für BSC Testnet
+          <br />
+          <br />
+          <strong>Option C — Lokal deployen:</strong>
+          <br />
+          <code>npm run compile && npm run deploy:sepolia</code>
         </div>
       )}
 
-      <label>Factory-Adresse (Override)</label>
+      <label>Factory-Adresse</label>
       <div className="row">
         <input
-          placeholder={factory ?? "0x..."}
+          placeholder={factory ?? "0x... (nach deploy:sepolia eintragen)"}
           value={factoryOverride}
           onChange={(e) => setFactoryOverride(e.target.value)}
         />
@@ -80,9 +100,13 @@ export function CreateTokenPanel({ onCreated }: Props) {
           Speichern
         </button>
       </div>
-      {factory && (
+      {factory ? (
         <p className="hint" style={{ marginTop: "-0.5rem" }}>
           Aktiv: <code>{factory}</code>
+        </p>
+      ) : (
+        <p className="hint" style={{ marginTop: "-0.5rem" }}>
+          Noch keine Factory — Adresse oben einfügen oder in Dokploy als Env setzen.
         </p>
       )}
 

@@ -13,3 +13,5 @@ services:
       - NODE_ENV=production
       - PORT=3000
       - HOSTNAME=0.0.0.0
+      - FACTORY_SEPOLIA=${FACTORY_SEPOLIA:-}
+      - FACTORY_BSC_TESTNET=${FACTORY_BSC_TESTNET:-}
