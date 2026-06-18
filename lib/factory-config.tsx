@@ -20,17 +20,26 @@ interface FactoryConfigContextValue {
 
 const FactoryConfigContext = createContext<FactoryConfigContextValue | null>(null);
 
-function localOverride(chainId: SupportedChainId): `0x${string}` | null {
-  const v = localStorage.getItem(`factory-override-${chainId}`);
-  return v ? (v as `0x${string}`) : null;
+const CHAIN_IDS: SupportedChainId[] = [11155111, 97];
+
+function readLocalOverrides(): FactoryMap {
+  if (typeof window === "undefined") return {};
+  const map: FactoryMap = {};
+  for (const id of CHAIN_IDS) {
+    const v = localStorage.getItem(`factory-override-${id}`);
+    if (v) map[id] = v;
+  }
+  return map;
 }
 
 export function FactoryConfigProvider({ children }: { children: ReactNode }) {
   const [serverFactories, setServerFactories] = useState<FactoryMap>({});
+  const [localOverrides, setLocalOverrides] = useState<FactoryMap>({});
   const [loaded, setLoaded] = useState(false);
-  const [overrideVersion, setOverrideVersion] = useState(0);
 
   useEffect(() => {
+    setLocalOverrides(readLocalOverrides());
+
     fetch("/api/config")
       .then((r) => r.json())
       .then((data: { factories: FactoryMap }) => {
@@ -41,10 +50,8 @@ export function FactoryConfigProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const getFactory = (chainId: SupportedChainId): `0x${string}` | null => {
-    void overrideVersion;
-
-    const override = localOverride(chainId);
-    if (override) return override;
+    const override = localOverrides[chainId];
+    if (override) return override as `0x${string}`;
 
     const fromServer = serverFactories[chainId];
     if (fromServer) return fromServer as `0x${string}`;
@@ -54,7 +61,7 @@ export function FactoryConfigProvider({ children }: { children: ReactNode }) {
 
   const saveOverride = (chainId: SupportedChainId, address: string) => {
     setFactoryAddress(chainId, address);
-    setOverrideVersion((v) => v + 1);
+    setLocalOverrides(readLocalOverrides());
   };
 
   return (

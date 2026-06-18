@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { Providers } from "@/lib/wagmi";
 import { FactoryConfigProvider } from "@/lib/factory-config";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Token Research Lab",
   description: "Testnet panel for wallet token display security research",
