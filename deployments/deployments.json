@@ -1,0 +1,12 @@
+{
+  "11155111": {
+    "chainId": 11155111,
+    "factory": "",
+    "note": "Run: npm run deploy:sepolia — then paste factory address here"
+  },
+  "97": {
+    "chainId": 97,
+    "factory": "",
+    "note": "Run: npm run deploy:bsc — then paste factory address here"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "name": "token-research-lab",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Testnet panel for wallet token display security research",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "compile": "hardhat compile",
+    "deploy:sepolia": "hardhat run scripts/deploy.ts --network sepolia",
+    "deploy:bsc": "hardhat run scripts/deploy.ts --network bscTestnet",
+    "node": "hardhat node"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.62.8",
+    "next": "^14.2.21",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "viem": "^2.21.54",
+    "wagmi": "^2.14.6"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@openzeppelin/contracts": "^5.1.0",
+    "@types/node": "^22.10.2",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "dotenv": "^16.4.7",
+    "hardhat": "^2.22.17",
+    "typescript": "^5.7.2"
+  }
+}

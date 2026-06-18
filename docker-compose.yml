@@ -1,0 +1,15 @@
+services:
+  token-research-lab:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_FACTORY_SEPOLIA: ${NEXT_PUBLIC_FACTORY_SEPOLIA:-}
+        NEXT_PUBLIC_FACTORY_BSC_TESTNET: ${NEXT_PUBLIC_FACTORY_BSC_TESTNET:-}
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - HOSTNAME=0.0.0.0
